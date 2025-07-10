@@ -1,0 +1,126 @@
+a1
+|
+a2
+|
+a3---b1
+|     |       
+a4    b2---c1
+       |    |
+      b3    c2
+
+
+i think i kind of understand branches, lets try to understand it even more, say i start in a folder, and init git there, and then just
+ have a bunch of commits in main branch only (lets call it a, so initial commits are a1,a2,a3).. 1-2-3 and so on..
+now say im at commit 3, which is basically a snapshot of the current status right, so yeah im at commit 3; and then i wanna do some experiments, so i make a branch
+say b; like say i was at a (obv commit no. 3) i do git branch b ; this makes branch b and its curretly equal to a3...
+call this b1, b1=a3... then i make some new files and changes etc in b and call it b2 and branch again to make c (c1=b2) 
+then i make commits in branch a (=a4) and then in branch b (=b3) and then in branch c (=c2)
+Then assume that a is my main branch, like this is say the basic functionality of my website and b and c were used to work on different specific features
+so i wanna merge these features onto a now, so i can do git checkout a (so im at a now, obv commit 4 so a4) and then i do git merge b and then git merge c
+is this right? pls explain more :) if my intuition is correct or wtv points you need to tell me etc.        
+____________________________________
+ok well assume that i have managed to merge b and c onto a5 in one go 
+but one interesting thing i think i realise is when 
+i merge a and c (first off i thought this was not symmetric, it was like 
+c was acting on a, but its actually symmetric rght, like both a and c are 
+acting on each other and creating one thing) both a and c will point to a5 
+now (importantly c will also point to a5) is this true? well i guess it must
+be cos it makes it useful, but say like i was using branch b to work on blog
+features of my website, and i was using c to work on projects page of my website... 
+and like say a contains the very basic thing... like thats where i work on styling, and about me page etc...
+so since now everything points to a5 (again assume i somehow did this, both b and c point to a5) so a5 is basically right now the final 
+version of my website that works currently... when i wanna work on the blog pages again, i can just do checkout b and work on them right
+and ill pick up right from the newest version of my website cos its on 'a' right now right? and when i make changes ill 
+move onto say b4 or wtv and then i can do this whole cycle again
+btw just a tangent, i feel like i can actually imagine git as a graph now, this is so fucking cool man
+_____________________________________
+a c merge c points to a5. a b merge b points to a6. a6 is latest. but c doesnt point to a6
+____________________________________
+how does merge work
+when youre at a, and you do git merge b; first off obv only the pointer to a moves,
+what happens to files:
+basically say we originally only had a, and it had files a1,a2..... then at some point i did git checkout b
+then i made new files b1,b2... in b. i work on files ai in both a and b branches...
+btw when i talk about edited and unchaged etc, i mean w.r.t to common ancestor, (remember this shit is just a tree of sorts)
+ok so obv all bi get added to a when we merge...
+and any new files i had made in a, nothing happens to them, they still remain there
+then for the ai's in both branches, you can do basicaly three operations; E (edit) , D (delete) , U (unchanged), so if you do thing X in a and thing Y in b
+call those files form XY, for egs if you edit file a1 in a and dont change it in B, then its of form EU. so there's 9 kinds of files possible
+->lets focus on ai's... there will be some ai's which are same in both, like the contents are same, so obv nothing happens here... [UU]
+-> for the ai's whose contents are different in a and b , there will be a **MERGE CONFLICT** (lets deal w this later) [EU,UE,EE]
+UE: i guess this is a fast forward
+EU
+EE
+-> i edit ai in a but delete it in b : chatgpt says this is merge conflict again [ED]
+->i delete ai in a but edit it in b [DE]
+-> i delete ai in both a and b [DD]
+->i delete ai in a but leave it unchanged in b [DU] 
+->i do nothing to ai in a, but delete it in b [UD]
+__________________________________________________________________________
+also, does git merge line by line? like if two files are different but like second file just has additions, no edits, what happens?
+ok well if you just add one line, no merge error occurs, like in a, lines.txt was:
+hello
+in b lines.txt is now
+hello
+world
+when i do git merge b (while in a ofc) i'll get
+hello
+world
+no issues :D
+ok if you edit the same line in a and b, you gotta manually fix it...
+if i add a line in a, but do not add a line in b, and do git merge b, it says already up to date 
+__________________________________________________________________________
+yeah the way to not fast forward is this:
+git merge b 
+it would have ff'ed so instead do:
+git merge --no-ff b 
+it'll open vim for commit message (cos youre asking it to make a new commit, so tehre must be a message right)
+click i -> write out message -> click esc -> type :wq and donezooooo
+in the three way merge thingy, its actually pretty cool; 
+c0<---c1
+^---c2
+and then you wanna merge c1 and c2 (say a points to c1 and b points to c2, and you're at a, and wanna do git merge b)
+this does a three way merge, ie. it looks at c0 and c1 and c2... the reason it looks at c0 is its the thingy it compares everything to...  like:
+if f1 wasnt changed in c1 or c2 (wrt c0) then obv merging is no problem, just leave f1 there
+if f2 was changed (wrt c0) in exactly one of c1 or c2, when merging use that thingy. 
+like if i had edited file f2A in a (did nothing in b) and delteed f2B in b (did nothing in a), then on git merge b,
+f2A would remain same (version of a, ie. f2A is just a's version) and f2B will be delted in the merge commmit..
+Δ1 = changes from c0 → c1   (“ours” changes)
+Δ2 = changes from c0 → c2   (“theirs” changes)
+| Situation (relative to **c0**)                     | Result in **c3**                                              | Conflict? |
+| -------------------------------------------------- | ------------------------------------------------------------- | --------- |
+| File unchanged on both sides                       | Keep the file exactly as in c0.                               | No        |
+| Changed **only** in `c1`                           | Take `c1`’s version.                                          | No        |
+| Changed **only** in `c2`                           | Take `c2`’s version.                                          | No        |
+| Same change made in both (`c1` and `c2` identical) | Keep it; auto-merged.                                         | No        |
+| Both modified **differently**                      | Git inserts conflict markers `<<<<<<<`, needs manual resolve. | **Yes**   |
+| Deleted in `c2`, unchanged in `c1`                 | Delete the file.                                              | No        |
+| Deleted in `c2`, **modified** in `c1`              | “modify / delete” conflict—Git stops for a decision.          | **Yes**   |
+| Deleted in both                                    | Delete.                                                       | No        |
+i mean yeah this makes so much sense now :O
+
+ways to resolve conflict:
+* e552bb2 (b) conf(b) is bbbbbb
+| * 3280b85 (HEAD -> a) conf(a) is aaaaaa
+|/  
+*
+this is it right now, so when you merge b with a, ie. in a do git merge b; it'll tell you conflict, so i can just manually edit conf.txt 
+then add conf.txt then do git commit (do the vim commit message thingy) and voila we're done
+*   c569be8 (HEAD -> a) Manual method, first edit, then add and then git commit
+|\  
+| * e552bb2 (b) conf(b) is bbbbbb
+* | 3280b85 conf(a) is aaaaaa
+|/  
+*
+yessirski
+if you merge and it says their's conflict and you dont wanna merge anymore, do git merge --abort
+
+when merging, if you know one side is always correct, like all the things i did in a are correct, and im in a and im doing git merge b; then i can do
+git merge -X ours b [the X thing means extra option]
+our if b was right; git merge -X theirs b 
+perfect... but normally, ill wanna merge on file by file basis, so let git give conflict error and then go file by file; like 
+git checkout --ours ./f1 [if f1 was right in a]
+git checkout --theirs ./f2 [if f2 was right in b]
+basically git checkout --{ours/theirs} /path/to/file
+perfect!!!
+to delete a branch, do git branch -d name

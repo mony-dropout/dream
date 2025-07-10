@@ -1,0 +1,13 @@
+in my server, i have this folder /monyatwu ; and in sites enabled, this is my root. index is default.html
+i wanna code the websites on my mac and then scp it onto the server there... 
+there's going to be a folder webtest and another folder webfinal 
+everytime, im going to scp -r webfinal/. mony@${IP}:/monyatwu; 
+so basically at any point webfinal (on my mac) will be equal to monyatwu (on server) and this is the actual website being served
+im going to write code in webtest and then cp it to webfinal (explaining reaoson soon)
+but yeah in webtest im gonna use git etc normally no problem, but like whenver linking sites, like if i wanaa link http://monyatwu.com/blog/monymethod
+i will instead write file:///Users/monyatwu/Documents/webtest/blog/monymethod 
+the reason for thsi is, when you click on a html file on mac, it opens up that file in safari, so for rapid testing and seeing how my file looks, ill 
+write all my code with file:/// thingy so that like i can click on it and check out how it looks etc. and then ill cp webtest to webfinal 
+and then i'll do sed on webfinal like for f in webfinal : 
+sed 's|file:///users/monyatwu/Documents/webtest|https://monyatwu.com|g' f.txt
+and then i'll scp this onto /monyatwu and we're donezo :D
